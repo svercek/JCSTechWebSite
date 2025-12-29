@@ -4,6 +4,7 @@ import AiroErrorBoundary from '../dev-tools/src/AiroErrorBoundary';
 import RootLayout, { RootLayoutConfig } from './layouts/RootLayout';
 import { routes } from './routes';
 import Spinner from './components/Spinner';
+import ScrollToTop from './components/ScrollToTop';
 
 const SpinnerFallback = () => (
   <div className="flex justify-center py-8 h-screen items-center">
@@ -54,6 +55,7 @@ const router = createBrowserRouter([
     element: import.meta.env.DEV ? (
       <AiroErrorBoundary>
         <Suspense fallback={<SpinnerFallback />}>
+          <ScrollToTop />
           <RootLayout config={{ header: headerConfig, footer: footerConfig }}>
             <Outlet />
           </RootLayout>
@@ -61,6 +63,7 @@ const router = createBrowserRouter([
       </AiroErrorBoundary>
     ) : (
       <Suspense fallback={<SpinnerFallback />}>
+        <ScrollToTop />
         <RootLayout config={{ header: headerConfig, footer: footerConfig }}>
           <Outlet />
         </RootLayout>

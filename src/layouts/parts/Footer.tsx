@@ -71,12 +71,13 @@ export default function FooterPattern({ config = {}, className }: FooterPatternP
 
   const renderSimpleFooter = () => (
     <div className={cn(
-      "text-sm text-muted-foreground",
+      "text-sm text-muted-foreground space-y-2",
       copyright.position === 'center' && "text-center",
       copyright.position === 'left' && "text-left",
       copyright.position === 'right' && "text-right"
     )}>
-      {copyrightText}
+      <div>Conceived and Designed by John Svercek, Developed and coded by Airo</div>
+      <div>{copyrightText}</div>
     </div>
   );
 
