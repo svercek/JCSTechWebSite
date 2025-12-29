@@ -2,7 +2,10 @@ import { existsSync, readFileSync } from 'node:fs';
 import { drizzle } from 'drizzle-orm/mysql2';
 import mysql from 'mysql2/promise';
 import * as schema from './schema';
+import { config } from 'dotenv';
 
+// Load environment variables from .env file
+config();
 /**
  * Load database configuration from JSON config file
  * Reads from /alloc/config.json (container) or ./config.json (host)
