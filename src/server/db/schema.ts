@@ -1,25 +1,21 @@
-import { mysqlTable, int, varchar, text, timestamp, boolean } from 'drizzle-orm/mysql-core';
 
-// Blog posts table
-export const blogPosts = mysqlTable('blog_posts', {
-  id: int('id').primaryKey().autoincrement(),
+import { pgTable, serial, varchar, text, timestamp } from 'drizzle-orm/pg-core';
+
+/**
+ * Blog Posts Table
+ * Stores all blog post content and metadata
+ */
+export const blogPosts = pgTable('blog_posts', {
+  id: serial('id').primaryKey(),
   title: varchar('title', { length: 255 }).notNull(),
   slug: varchar('slug', { length: 255 }).notNull().unique(),
-  excerpt: text('excerpt').notNull(),
+  excerpt: text('excerpt'),
   content: text('content').notNull(),
-  category: varchar('category', { length: 100 }).notNull(),
-  imageUrl: varchar('image_url', { length: 500 }),
-  readTime: varchar('read_time', { length: 50 }),
-  published: boolean('published').default(false).notNull(),
-  featured: boolean('featured').default(false).notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  author: varchar('author', { length: 100 }).notNull(),
+  publishedDate: timestamp('published_date').defaultNow(),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
 });
 
-// Blog categories table
-export const blogCategories = mysqlTable('blog_categories', {
-  id: int('id').primaryKey().autoincrement(),
-  name: varchar('name', { length: 100 }).notNull().unique(),
-  slug: varchar('slug', { length: 100 }).notNull().unique(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-});
+export type BlogPost = typeof blogPosts.$inferSelect;
+export type NewBlogPost = typeof blogPosts.$inferInsert;

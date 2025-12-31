@@ -1,90 +1,35 @@
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { env } from 'node:process';
-import { defineConfig } from 'drizzle-kit';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import * as schema from './schema.js';
+import { config } from 'dotenv';
 
-/**
- * Database credentials interface
- */
-interface DatabaseCredentials {
-  host: string;
-  port: number;
-  user: string;
-  password: string;
-  database: string;
-}
+// Load environment variables from .env file
+config();
 
-/**
- * Load database configuration from JSON config file
- * Reads from /alloc/config.json
- *
- * @returns MySQL connection credentials
- * @throws Error if config file not found or invalid
- */
-function getDatabaseCredentials(): DatabaseCredentials {
-  const configPath = join(env.NOMAD_ALLOC_DIR || '/alloc', 'config.json');
+const skipDb = process.env.SKIP_DB === 'true';
 
-  if (!existsSync(configPath)) {
+let db: ReturnType<typeof drizzle>;
+
+if (skipDb) {
+  console.log('⚠️  Database skipped (SKIP_DB=true) - Blog features disabled');
+  // Create a mock db object for when database is skipped
+  db = null as any;
+} else {
+  if (!process.env.DATABASE_URL) {
     throw new Error(
-      `Database configuration file not found at ${configPath}`
+      'DATABASE_URL environment variable is required when SKIP_DB is not true.\n' +
+        'Please add DATABASE_URL to your .env file or set SKIP_DB=true'
     );
   }
 
-  try {
-    const config = JSON.parse(readFileSync(configPath, 'utf-8'));
+  // Create PostgreSQL connection
+  const client = postgres(process.env.DATABASE_URL, {
+    ssl: 'require',
+    max: 10,
+  });
 
-    if (!config.DATABASE?.VALUE) {
-      throw new Error('Invalid config.json structure: DATABASE.VALUE not found');
-    }
-
-    const db = config.DATABASE.VALUE;
-
-    if (!db.HOST || !db.PORT || !db.USERNAME || !db.PASSWORD || !db.NAME) {
-      throw new Error('Invalid config.json: Missing required database credentials');
-    }
-
-    return {
-      host: db.HOST,
-      port: parseInt(String(db.PORT), 10),
-      user: db.USERNAME,
-      password: db.PASSWORD,
-      database: db.NAME,
-    };
-  } catch (error) {
-    if (error instanceof SyntaxError) {
-      throw new Error(`Failed to parse ${configPath}: Invalid JSON format`);
-    }
-    throw error;
-  }
+  db = drizzle(client, { schema });
+  console.log('✅ Database connected (PostgreSQL via Neon)');
 }
 
-/**
- * Drizzle Kit configuration for database migrations
- *
- * Usage:
- * - Generate migrations: npx drizzle-kit generate
- * - Push schema to database: npx drizzle-kit push
- *
- * Configuration source:
- * - Reads from /alloc/config.json
- * - Throws error if config file not found or invalid
- */
-const credentials = getDatabaseCredentials();
-
-export default defineConfig({
-  schema: './src/server/db/schema.ts',
-  out: './drizzle',
-  dialect: 'mysql',
-  dbCredentials: {
-    host: credentials.host,
-    port: credentials.port,
-    user: credentials.user,
-    password: credentials.password,
-    database: credentials.database,
-    ssl: {
-      rejectUnauthorized: false,
-    }
-  },
-  verbose: true,
-  strict: false,
-});
+export { db };

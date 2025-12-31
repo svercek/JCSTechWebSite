@@ -1,121 +1,35 @@
-import { existsSync, readFileSync } from 'node:fs';
-import { drizzle } from 'drizzle-orm/mysql2';
-import mysql from 'mysql2/promise';
-import * as schema from './schema';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import * as schema from './schema.js';
 import { config } from 'dotenv';
 
 // Load environment variables from .env file
 config();
-/**
- * Load database configuration from JSON config file
- * Reads from /alloc/config.json (container) or ./config.json (host)
- *
- * @returns Database connection configuration
- * @throws Error if config file not found or invalid
- */
 
-//Skip database
-console.log('⚠️  Database disabled for local development');
-  // Export a mock db object
-export const db = null as any;
+const skipDb = process.env.SKIP_DB === 'true';
 
-// Check if we should skip database
-//if (process.env.SKIP_DB === 'true') 
-  //{
-    //console.log('⚠️  Database disabled for local development');
-      // Export a mock db object
-    //export const db = null as any;
-  //} 
-//else
+let db: ReturnType<typeof drizzle>;
 
-/**
- *function getDatabaseConfig() {
- *    const configPath = '/alloc/config.json';
- *
- *    if (!existsSync(configPath)) {
- *          throw new Error(
- *          `Database configuration file not found. Expected ${configPath}`);
- *    }
- *
- *   try {
- *     const config = JSON.parse(readFileSync(configPath, 'utf-8'));
- *
- *      if (!config.DATABASE?.VALUE) {
- *        throw new Error('Invalid config.json structure: DATABASE.VALUE not found');
- *      }
- *
- *       const db = config.DATABASE.VALUE;
- *
- *        if (!db.HOST || !db.PORT || !db.USERNAME || !db.PASSWORD || !db.NAME) {
- *            throw new Error('Invalid config.json: Missing required database credentials');
- *        }
- *
- *        return {
- *          host: db.HOST,
- *          port: db.PORT,
- *          user: db.USERNAME,
- *          password: db.PASSWORD,
- *          database: db.NAME,
- *      };
- *    } catch (error) {
- *        if (error instanceof SyntaxError) {
- *              throw new Error(`Failed to parse ${configPath}: Invalid JSON format`);
- *        }
- *        throw error;
- *    }
- *  }
- *
- *
- *
- *
- *
- *   /**
- * * Database connection setup using Drizzle ORM with MySQL2
- * *
- * * Configuration source:
- * * - Reads from /alloc/config.json (in container) or ./config.json (on host)
- * * - Throws error if config file not found or invalid
- *             end comment
- *
- *  // Get database configuration
- *const dbConfig = getDatabaseConfig();
- *
- *  // Create MySQL connection pool with SSL enabled
- *const poolConnection = mysql.createPool({
- *  host: dbConfig.host,
- *  port: dbConfig.port,
- *  user: dbConfig.user,
- *  password: dbConfig.password,
- *  database: dbConfig.database,
- *  ssl: {
- *    rejectUnauthorized: false,
- *  },
- *  waitForConnections: true,
- *  connectionLimit: 10,
- *  queueLimit: 0,
- *  });
- *
- * // Create Drizzle instance
- *export const db = drizzle(poolConnection, { schema, mode: 'default' });
- *
- * /**
- * * Test database connection
- *              end comment
- *export async function testConnection(): Promise<boolean> {
- *  try {
- *    const connection = await poolConnection.getConnection();
- *    await connection.ping();
- *    connection.release();
- *    return true;
- *  } catch {
- *    return false;
- *  }
- *}
- *
- *            end comment
- * * Close database connection pool
- *             end comment
- *export async function closeConnection(): Promise<void> {
- *  await poolConnection.end();
- *}
- */
+if (skipDb) {
+  console.log('⚠️  Database skipped (SKIP_DB=true) - Blog features disabled');
+  // Create a mock db object for when database is skipped
+  db = null as any;
+} else {
+  if (!process.env.DATABASE_URL) {
+    throw new Error(
+      'DATABASE_URL environment variable is required when SKIP_DB is not true.\n' +
+        'Please add DATABASE_URL to your .env file or set SKIP_DB=true'
+    );
+  }
+
+  // Create PostgreSQL connection
+  const client = postgres(process.env.DATABASE_URL, {
+    ssl: 'require',
+    max: 10,
+  });
+
+  db = drizzle(client, { schema });
+  console.log('✅ Database connected (PostgreSQL via Neon)');
+}
+
+export { db };
