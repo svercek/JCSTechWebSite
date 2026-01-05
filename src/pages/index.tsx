@@ -125,7 +125,7 @@ export default function HomePage() {
               </CardContent>
             </Card>
 
-            {/* Blog */}
+            {/* My Thoughts */}
             <Card className="flex flex-col hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
@@ -143,8 +143,8 @@ export default function HomePage() {
                   your business.
                 </p>
                 <Button asChild variant="outline" className="w-full">
-                  <Link to="/blog">
-                    Read Our Blog <ArrowRight className="ml-2 h-4 w-4" />
+                  <Link to="/thoughts">
+                    Read My Thoughts <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
               </CardContent>

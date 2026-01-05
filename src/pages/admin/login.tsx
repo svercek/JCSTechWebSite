@@ -27,8 +27,8 @@ export default function AdminLogin() {
       const data = await response.json();
 
       if (response.ok) {
-        // Redirect to admin blog page
-        navigate('/admin/blog');
+        // Redirect to admin thoughts page
+        navigate('/admin/thoughts');
       } else {
         setError(data.error || 'Invalid password');
       }
@@ -50,7 +50,7 @@ export default function AdminLogin() {
           </div>
           <CardTitle className="text-2xl text-center">Admin Login</CardTitle>
           <CardDescription className="text-center">
-            Enter your admin password to access the blog management dashboard
+            Enter your admin password to access the thoughts management dashboard
           </CardDescription>
         </CardHeader>
         <CardContent>

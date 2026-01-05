@@ -36,7 +36,7 @@ const emptyForm: PostFormData = {
   author: 'John Svercek',
 };
 
-export default function BlogAdminPage() {
+export default function ThoughtsAdminPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [formData, setFormData] = useState<PostFormData>(emptyForm);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -177,8 +177,8 @@ export default function BlogAdminPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Blog Management</h1>
-            <p className="text-muted-foreground mt-1">Create and manage blog posts</p>
+            <h1 className="text-3xl font-bold">My Thoughts Management</h1>
+            <p className="text-muted-foreground mt-1">Create and manage your thoughts</p>
           </div>
           <Button onClick={handleLogout} variant="outline" size="sm">
             <LogOut className="h-4 w-4 mr-2" />
@@ -207,7 +207,7 @@ export default function BlogAdminPage() {
             <CardHeader>
               <CardTitle>{editingId ? 'Edit Post' : 'Create New Post'}</CardTitle>
               <CardDescription>
-                {editingId ? 'Update the blog post details' : 'Fill in the details for your new blog post'}
+                {editingId ? 'Update the post details' : 'Fill in the details for your new post'}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -266,7 +266,7 @@ export default function BlogAdminPage() {
                     value={formData.content}
                     onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                     required
-                    placeholder="Write your blog post content here..."
+                    placeholder="Write your thoughts here..."
                     rows={12}
                     className="font-mono text-sm"
                   />
@@ -310,7 +310,7 @@ export default function BlogAdminPage() {
           ) : posts.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
-                No blog posts yet. Create your first post to get started!
+                No posts yet. Create your first post to get started!
               </CardContent>
             </Card>
           ) : (

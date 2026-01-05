@@ -1,6 +1,6 @@
 import { Link as RouterLink, Navigate as RouterNavigate, useNavigate as useRouterNavigate, useParams as useRouterParams } from 'react-router-dom';
 // Type-safe navigation types
-export type Path = '/' | '/traditional-development' | '/ai-solutions' | '/blog' | '/contact';
+export type Path = '/' | '/traditional-development' | '/ai-solutions' | '/thoughts' | '/contact';
 export type Params = Record<string, string | undefined>;
 
 // Export standard React Router components with type safety

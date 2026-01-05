@@ -2,7 +2,8 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Calendar, Clock, ArrowRight } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { ArrowLeft, Calendar, Clock, ArrowRight, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface BlogPost {
@@ -22,10 +23,11 @@ interface BlogPost {
 
 const categories = ['All', 'AI Strategy', 'Technology Leadership', 'Business Value', 'Security', 'Strategy', 'Modernization'];
 
-export default function BlogPage() {
+export default function ThoughtsPage() {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
 
   useEffect(() => {
     fetchBlogPosts();
@@ -72,7 +74,7 @@ export default function BlogPage() {
         </section>
         <section className="py-16 bg-background">
           <div className="container mx-auto px-4 text-center">
-            <p className="text-muted-foreground">Loading blog posts...</p>
+            <p className="text-muted-foreground">Loading posts...</p>
           </div>
         </section>
       </div>
@@ -94,8 +96,8 @@ export default function BlogPage() {
         </section>
         <section className="py-16 bg-background">
           <div className="container mx-auto px-4 text-center">
-            <p className="text-muted-foreground mb-4">No blog posts available yet.</p>
-            <p className="text-sm text-muted-foreground">Check back soon for our latest articles!</p>
+            <p className="text-muted-foreground mb-4">No posts available yet.</p>
+            <p className="text-sm text-muted-foreground">Check back soon for my latest thoughts!</p>
           </div>
         </section>
         <section className="py-8 bg-background border-t">
@@ -118,10 +120,10 @@ export default function BlogPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-teal-600 via-blue-700 to-purple-900" />
         <div className="relative z-10 container mx-auto px-4 text-center text-white">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Insights & Articles
+            My Thoughts
           </h1>
           <p className="text-xl max-w-3xl mx-auto opacity-90">
-            Thought leadership on software engineering, AI implementation, and technology strategy from 
+            Personal insights on software engineering, AI implementation, and technology strategy from 
             three decades of enterprise experience.
           </p>
         </div>
@@ -180,7 +182,7 @@ export default function BlogPage() {
                         </div>
                       )}
                     </div>
-                    <Button className="w-fit">
+                    <Button className="w-fit" onClick={() => setSelectedPost(featuredPost)}>
                       Read Article <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </div>
@@ -228,7 +230,7 @@ export default function BlogPage() {
                         </div>
                       )}
                     </div>
-                    <Button variant="outline" className="w-full">
+                    <Button variant="outline" className="w-full" onClick={() => setSelectedPost(post)}>
                       Read More <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </CardContent>
@@ -272,6 +274,38 @@ export default function BlogPage() {
           </Button>
         </div>
       </section>
+
+      {/* Post Detail Modal */}
+      <Dialog open={!!selectedPost} onOpenChange={() => setSelectedPost(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          {selectedPost && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-3xl font-bold">{selectedPost.title}</DialogTitle>
+                <DialogDescription className="flex flex-wrap gap-4 text-sm text-muted-foreground mt-4">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    {formatDate(selectedPost.createdAt)}
+                  </div>
+                  {selectedPost.readTime && (
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4" />
+                      {selectedPost.readTime}
+                    </div>
+                  )}
+                  <Badge variant="secondary">{selectedPost.category}</Badge>
+                </DialogDescription>
+              </DialogHeader>
+              <div className="mt-6 prose prose-lg max-w-none dark:prose-invert">
+                <div 
+                  className="text-foreground leading-relaxed whitespace-pre-wrap"
+                  dangerouslySetInnerHTML={{ __html: selectedPost.content }}
+                />
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -27,7 +27,7 @@ const headerConfig: RootLayoutConfig['header'] = {
     { href: '/', label: 'Home' },
     { href: '/traditional-development', label: 'Traditional Development' },
     { href: '/ai-solutions', label: 'AI Solutions' },
-    { href: '/blog', label: 'Blog' },
+    { href: '/thoughts', label: 'My Thoughts' },
     { href: '/contact', label: 'Contact' }
   ],
   sticky: true
