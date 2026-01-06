@@ -46,6 +46,7 @@ export default function ThoughtsAdminPage() {
   const [error, setError] = useState('');
   const [authenticated, setAuthenticated] = useState(false);
   const navigate = useNavigate();
+  const [successMessage, setSuccessMessage] = useState(''); 
 
   // Check authentication on mount
   useEffect(() => {
@@ -70,9 +71,20 @@ export default function ThoughtsAdminPage() {
     try {
       const response = await fetch('/api/blog/posts');
       const data = await response.json();
-      setPosts(data);
+      
+      // Check if response is an error object
+      if (data.error) {
+        setError(data.message || 'Failed to load posts');
+        setPosts([]);
+      } else if (Array.isArray(data)) {
+        setPosts(data);
+      } else {
+        setError('Invalid response format');
+        setPosts([]);
+      }
     } catch (err) {
       setError('Failed to load posts');
+      setPosts([]);
     } finally {
       setLoading(false);
     }
@@ -90,29 +102,38 @@ export default function ThoughtsAdminPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccessMessage('');  // ADD THIS LINE
     setSaving(true);
-
+  
     try {
       const url = editingId ? `/api/blog/posts/${editingId}` : '/api/blog/posts';
       const method = editingId ? 'PUT' : 'POST';
-
+  
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
-
+  
+      const data = await response.json();  // MOVE THIS UP
+  
+      // Check if response is successful (200-299 status codes)
       if (response.ok) {
+        // Success! Refresh the post list
         await fetchPosts();
         setFormData(emptyForm);
         setEditingId(null);
         setIsFormOpen(false);
+        setSuccessMessage(editingId ? 'Post updated successfully!' : 'Post created successfully!');  // ADD THIS
+        // Clear success message after 3 seconds
+        setTimeout(() => setSuccessMessage(''), 3000);  // ADD THIS
       } else {
-        const data = await response.json();
-        setError(data.error || 'Failed to save post');
+        // API returned an error status
+        setError(data.error || data.message || 'Failed to save post');
       }
     } catch (err) {
-      setError('Failed to save post');
+      console.error('Submit error:', err);  // ADD THIS
+      setError('Failed to save post. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -192,7 +213,14 @@ export default function ThoughtsAdminPage() {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-
+        
+        {/* Success Alert */}
+        {successMessage && (
+          <Alert className="bg-green-50 border-green-200 text-green-800">
+            <AlertDescription>{successMessage}</AlertDescription>
+          </Alert>
+        )}
+		
         {/* Create New Post Button */}
         {!isFormOpen && (
           <Button onClick={() => setIsFormOpen(true)} className="w-full sm:w-auto">
@@ -200,7 +228,7 @@ export default function ThoughtsAdminPage() {
             Create New Post
           </Button>
         )}
-
+		
         {/* Post Form */}
         {isFormOpen && (
           <Card>

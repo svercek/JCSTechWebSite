@@ -67,7 +67,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ error: 'Missing required fields' });
       }
 
-      const [newPost] = await db
+console.log('Attempting to create post:', { title, slug, author });
+      
+      const result = await db
         .insert(blogPosts)
         .values({
           title,
@@ -78,8 +80,45 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         })
         .returning();
 
+      console.log('Insert result:', result);
+      
+      if (!result || result.length === 0) {
+        await client.end();
+        return res.status(500).json({ error: 'Post created but no data returned' });
+      }
+
+      const newPost = result[0];
+      console.log('Post created successfully:', newPost.id);
+      
       await client.end();
       return res.status(201).json(newPost);
+
+      console.log('Attempting to create post:', { title, slug, author });
+      
+      const result = await db
+        .insert(blogPosts)
+        .values({
+          title,
+          slug,
+          excerpt: excerpt || null,
+          content,
+          author,
+        })
+        .returning();
+
+      console.log('Insert result:', result);
+      
+      if (!result || result.length === 0) {
+        await client.end();
+        return res.status(500).json({ error: 'Post created but no data returned' });
+      }
+
+      const newPost = result[0];
+      console.log('Post created successfully:', newPost.id);
+      
+      await client.end();
+      return res.status(201).json(newPost);
+
     }
 
     await client.end();
