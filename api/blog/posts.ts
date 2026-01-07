@@ -35,10 +35,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (req.method === 'GET') {
       console.log('[API] Fetching posts from database...');
-      const posts = await db.select().from(blogPosts).orderBy(desc(blogPosts.publishedDate));
-      console.log('[API] Found', posts.length, 'posts');
-      await client.end();
-      return res.status(200).json(posts);
+      try {
+        const posts = await db.select().from(blogPosts).orderBy(desc(blogPosts.publishedDate));
+        console.log('[API] Found', posts.length, 'posts');
+        await client.end();
+        return res.status(200).json(posts);
+      } catch (queryError) {
+        console.error('[API] Query failed:', queryError);
+        console.error('[API] Error message:', queryError instanceof Error ? queryError.message : String(queryError));
+        console.error('[API] Error stack:', queryError instanceof Error ? queryError.stack : 'No stack trace');
+        await client.end();
+        return res.status(500).json({
+          error: 'Database query failed',
+          message: queryError instanceof Error ? queryError.message : String(queryError),
+        });
+      }
     }
 
     if (req.method === 'POST') {
