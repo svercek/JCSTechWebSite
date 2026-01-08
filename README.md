@@ -22,7 +22,7 @@ This is the official website for JCS Technologies, featuring:
 
 ### Backend
 - **Node.js** - API routes
-- **MySQL** - Database (optional for blog)
+- **Neon** - Database (optional for blog)
 - **Drizzle ORM** - Type-safe database queries
 
 ## 📁 Project Structure
